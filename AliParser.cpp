@@ -15,8 +15,10 @@ AliParser::AliParser(string fileName,bool loadIndex) : sam(false),
 {
   int len = fileName.length();
   if (len == 0) {
-    stdin = true;
-  } else if (fileName.substr(len - 3,3) == "bam" ||
+	fileName = string("-");
+	len = 1;
+  }
+  if (fileName == "-" || fileName == "/dev/stdin" || fileName.substr(len - 3,3) == "bam" ||
              fileName.substr(len - 4,4) == "cram") {
     //cout<<"Assuming BAM file for "<<fileName<<endl;
     file = samopen(fileName.c_str(),"rb",NULL);
@@ -136,7 +138,7 @@ bool AliParser::parseSamLine(istream *sin)
   int i = 0;
   while (i < max && buf[i] != '\0' && buf[i] != '\t') i++; i++; // 1
   while (i < max && buf[i] != '\0' && buf[i] != '\t') i++; i++; // 2
-  
+
   string tmp = "";
   while (i < max && buf[i] != '\0' && buf[i] != '\t') tmp += buf[i++]; i++;
   if (tmp == "*") chr_ = tmp;
@@ -153,29 +155,29 @@ bool AliParser::parseSamLine(istream *sin)
   tmp = "";
   while (i < max && buf[i] != '\0' && buf[i] != '\t') tmp += buf[i++]; i++;
   start_ = strtol(tmp.c_str(),NULL,10);
-  
+
   tmp = "";
   while (i < max && buf[i] != '\0' && buf[i] != '\t') tmp += buf[i++]; i++;
   qual_ = strtol(tmp.c_str(),NULL,10);
-  
+
   tmp = "";
   while (i < max && buf[i] != '\0' && buf[i] != '\t') tmp += buf[i++]; i++;
   //if (tmp == "*") return false;
-  
+
   while (i < max && buf[i] != '\0' && buf[i] != '\t') i++; i++; // 7
   while (i < max && buf[i] != '\0' && buf[i] != '\t') i++; i++; // 8
   while (i < max && buf[i] != '\0' && buf[i] != '\t') i++; i++; // 9
-  
+
   int len = 0;
   while (i < max && buf[i] != '\0' && buf[i] != '\t') { len++; i++; }
   end_ = start_ + len - 1;
-  
+
   if (i >= max) return false;
 
   return true;
 }
 
-// callback for bam_fetch()  
+// callback for bam_fetch()
 static int fetch_func(const bam1_t *b, void *data)
 {
   return 0;
