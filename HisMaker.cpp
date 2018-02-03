@@ -72,18 +72,18 @@ HisMaker::HisMaker(string rootFile,int binSize,bool useGCcorr,
     cerr<<"Bin size "<<binSize<<" is not valid."<<endl;
     return;
   }
-  
+
   bin_size     = binSize;
   inv_bin_size = 1./bin_size;
-  
+
   dir_name = getDirName(bin_size);
-  
+
   // Statistics on RD
   rd_gc_name       = "rd_gc_";       rd_gc_name       += binSize;
   rd_gc_xy_name    = "rd_gc_xy_";    rd_gc_xy_name    += binSize;
   rd_gc_GC_name    = "rd_gc_GC_";    rd_gc_GC_name    += binSize;
   rd_gc_xy_GC_name = "rd_gc_xy_GC_"; rd_gc_xy_GC_name += binSize;
-  
+
   // Statistics on partitioning
   TString suff = "";
   if (useGCcorr) suff = "_GC";
@@ -95,15 +95,15 @@ HisMaker::HisMaker(string rootFile,int binSize,bool useGCcorr,
   dl       = new TH1D("dl" + suff, "Delta RD level",401,-0.5,400.5);
   dl2      = new TH2D("dl2" + suff,"Delta RD level",
 		      601,-300.5,300.5,601,-300.5,300.5);
-  
+
   // Precalculating inverse
   inv_vals = new double[N_INV];
   for (int i = 0;i < N_INV;i++) inv_vals[i] = 0;
-  
+
   // recalculating sqrt
   sqrt_vals = new double[N_SQRT];
   for (int i = 0;i < N_SQRT;i++) sqrt_vals[i] = 0;
-  
+
   // Allocating t-cumulative functions
   tfuncs = new TF1*[N_FUNC];
   for (int i = 0;i < N_FUNC;i++) tfuncs[i] = NULL;
@@ -146,9 +146,9 @@ TH1* HisMaker::getHistogram(TString root_file,TString dir,
 
   gROOT->cd();
   TH1 *ret = (TH1*)his->Clone(his->GetName());
-  
+
   file.Close();
-  
+
   return ret;
 }
 
@@ -175,16 +175,16 @@ bool HisMaker::writeH(bool useDir,
     }
     dir->cd();
   }
-  
+
   if (his1) his1->Write(his1->GetName(),TObject::kOverwrite);
   if (his2) his2->Write(his2->GetName(),TObject::kOverwrite);
   if (his3) his3->Write(his3->GetName(),TObject::kOverwrite);
   if (his4) his4->Write(his4->GetName(),TObject::kOverwrite);
   if (his5) his5->Write(his5->GetName(),TObject::kOverwrite);
   if (his6) his6->Write(his6->GetName(),TObject::kOverwrite);
-  
+
   file.Close();
-  
+
   return true;
 }
 
@@ -236,7 +236,7 @@ void HisMaker::getAverageVariance(double *rd,int start,int stop,
 double HisMaker::testRegion(double value,double m,double s,int n)
 {
   if (s == 0) s = 1;
-  
+
   TF1 *cum_t = getTFunction(n - 1);
   if (cum_t == NULL) {
     cerr<<"4: Can't find proper t-function."<<endl;
@@ -259,7 +259,7 @@ double HisMaker::testTwoRegions(double m1,double s1,int n1,
   double tmp = (tmp1 + tmp2)*(tmp1 + tmp2)*(n1 - 1)*(n2 - 1);
   tmp /= tmp1*tmp1*(n2 - 1) + tmp2*tmp2*(n1 - 1);
   int ndf = int(tmp + 0.5);
-  
+
   TF1* cum_t = getTFunction(ndf);
   if (cum_t == NULL) {
     cerr<<"2: Can't find proper t-function."<<endl;
@@ -267,9 +267,9 @@ double HisMaker::testTwoRegions(double m1,double s1,int n1,
   }
   double ret = cum_t->Eval(t);
   if (t > 0) ret = 1 - ret;
-  
+
   ret *= scale*inv_bin_size*getInverse(n1 + n2);
-  
+
   return ret;
 }
 
@@ -284,17 +284,17 @@ double HisMaker::getEValue(double mean,double sigma,double *rd,
   }
   aver *= over_n;
   s = TMath::Sqrt(s*over_n - aver*aver);
-  
+
   if (s == 0) s = sigma*TMath::Sqrt(aver/mean);
   if (s == 0) s = 1;
-  
+
   TF1* cum = getTFunction(n - 1);
   double x = (aver - mean)*getSqrt(n)/s;
   double ret = cum->Eval(x);
-  
+
   if (x > 0) ret = 1 - ret;
   ret *= GENOME_SIZE_NORMAL*inv_bin_size*getInverse(end - start + 1);
-  
+
   return ret;
 }
 
@@ -370,7 +370,7 @@ void HisMaker::view(string *files,int n_files,bool useATcorr,bool useGCcorr)
 
 void interateOverPrimitives(TList *list)
 {
-  
+
 }
 
 void HisMaker::executeROOT(TString obj_class,TString class_fun,TString args)
@@ -447,7 +447,7 @@ void HisMaker::generateView(bool useATcorr,bool useGCcorr) // Global view
     TStyle *st = new TStyle("st","st");
     st->SetOptStat(false);  // No box with statistics
     st->SetOptTitle(false); // No box with title
-    gROOT->SetStyle("st"); 
+    gROOT->SetStyle("st");
     canv_view = new TCanvas("canv","canv",900,600);
     canv_view->SetFillColor(kWhite);
     canv_view->SetBorderMode(0); // No borders
@@ -463,7 +463,7 @@ void HisMaker::generateView(bool useATcorr,bool useGCcorr) // Global view
 			"chr8","chr9","chr10","chr11","chr12","chr13","chr14",
 			"chr15","chr16","chr17","chr18","chr19","chr20",
 			"chr21","chr22","chrX","chrY"};
-  
+
   for (int i = 0;i < 24;i++) {
     TString chrom     = chroms[i];
     TString file_name = root_file_name;
@@ -507,7 +507,7 @@ void HisMaker::generateView(bool useATcorr,bool useGCcorr) // Global view
 
     if (!his || !hisc || !hisp || !hism) {
       cout<<"For file '"<<file_name<<"'."<<endl;
-      if (!his) 
+      if (!his)
 	cout<<"Can't find RD histogram for '"<<chrom<<"'."<<endl;
       else if (!hisc)
 	cout<<"Can't find corrected RD histogram for '"<<chrom<<"'."<<endl;
@@ -536,12 +536,12 @@ void HisMaker::generateView(TString chrom,int start,int end,
     while (n_files < 16 && files[n_files].length() > 0)
       n_files++;
   }
-  
+
   if (!canv_view) {
     TStyle *st = new TStyle("st","st");
     st->SetOptStat(false);  // No box with statistics
     st->SetOptTitle(false); // No box with title
-    gROOT->SetStyle("st"); 
+    gROOT->SetStyle("st");
     canv_view = new TCanvas("canv","canv",900,600);
     canv_view->SetFillColor(kWhite);
     canv_view->SetBorderMode(0); // No borders
@@ -556,12 +556,12 @@ void HisMaker::generateView(TString chrom,int start,int end,
 	     n_files == 9) canv_view->Divide(3,3);
     else if (n_files >  9) canv_view->Divide(4,4);
   }
-  
+
   TString title = chrom; title += ":";
   title += start; title += "-";
   title += end;
   canv_view->SetTitle(title);
-  
+
   TString alt_chr               = Genome::canonicalChromName(chrom.Data());
   if (alt_chr == chrom) alt_chr = Genome::extendedChromName(chrom.Data());
   TString name           = getRawSignalName(chrom,bin_size);
@@ -595,7 +595,7 @@ void HisMaker::generateView(TString chrom,int start,int end,
       drawHistograms(chrom,start,end,win,title,pad,raw,his,hisc,hisp,hism);
     if (!his || !hisc || !hisp || !hism) {
       cout<<"For file '"<<file_name<<"'."<<endl;
-      if (!his) 
+      if (!his)
 	cout<<"Can't find RD histogram for '"<<chrom<<"'."<<endl;
       else if (!hisc)
 	cout<<"Can't find corrected RD histogram for '"<<chrom<<"'."<<endl;
@@ -740,7 +740,7 @@ int HisMaker::extract_pe(TString input,
 	  continue;
 	}
       }
-      
+
       while (parser->parseRecord()) {
 	if (parser->isUnmapped() || parser->isNextUnmapped()) continue;
 	int frg_len = parser->getFragmentLength();
@@ -748,7 +748,7 @@ int HisMaker::extract_pe(TString input,
 	if (parser->getChromosomeIndex() != chr_index ||
 	    rs > erange) break;
 	int fs,fe;
-	
+
 	bool go_further = false;
 	if (frg_len > 0)
 	  if ((forDel                &&
@@ -792,7 +792,7 @@ int HisMaker::extract_pe(TString input,
 	  }
 	}
       }
-      
+
       delete parser;
     }
   }
@@ -955,7 +955,7 @@ double HisMaker::gaussianEValue(double mean,double sigma,double *rd,
     if (rd[i] > max) max = rd[i];
     if (rd[i] < min) min = rd[i];
   }
-    
+
   av *= getInverse(n);
 
   double p = 0;
@@ -1007,13 +1007,13 @@ void HisMaker::callSVs(string *user_chroms,int n_chroms,
       cerr<<"Can't find all histograms for '"<<chrom<<"'."<<endl;
       return;
     }
-    
+
     TString hname = partition->GetName();
     TH1 *merge = (TH1*)partition->Clone(hname + "_merge");
-    
+
     double mean,sigma;
     getMeanSigma(rd_his,mean,sigma);
-    
+
     int n_bins = partition->GetNbinsX();
     double *level = new double[n_bins],*rd = new double[n_bins];
     char   *flags = new char[n_bins];
@@ -1052,28 +1052,28 @@ void HisMaker::callSVs(string *user_chroms,int n_chroms,
 	for (int i = bs;i <= be;i++) flags[i] = 'A';
       if (b > b0) b--;
     }
-    
+
     // Merging with short regions
     int n_add = 1;
     //while (n_add > 0) {
     while (delta < 0.25 && n_add > 0) { // Temporary for developing the usage of AIB
       for (int b = 0;b < n_bins;b++) {
-	
+
 	if (flags[b] != ' ') continue;
-	
+
 	int s = b;
 	while (b < n_bins && flags[b] == ' ') b++;
 	int e = b - 1;
-	
+
 	if (e < s || s == 0 || e >= n_bins) continue;
 	if (flags[s - 1] != flags[e + 1]) continue;
 	if (s == e) { flags[s] = flags[s - 1]; continue; }
-	
+
 	int le = s - 1,ls = le;
 	while (ls >= 0 && flags[ls] == flags[le]) ls--; ls++;
 	int rs = e + 1,re = rs;
 	while (re < n_bins && flags[re] == flags[rs]) re++; re--;
-	
+
 	double average,variance;
 	double raverage,rvariance;
 	double laverage,lvariance;
@@ -1082,24 +1082,24 @@ void HisMaker::callSVs(string *user_chroms,int n_chroms,
 	getAverageVariance(rd,rs,re,raverage,rvariance,rn);
 	getAverageVariance(rd,ls,le,laverage,lvariance,ln);
 	if (n > rn || n > ln) continue;
-	
+
 	if (testTwoRegions(laverage,lvariance,ln,average,variance,n,
 			   GENOME_SIZE_CNV) < CUTOFF_TWO_REGIONS &&
 	    testTwoRegions(raverage,rvariance,rn,average,variance,n,
 			   GENOME_SIZE_CNV) < CUTOFF_TWO_REGIONS)
 	  continue;
-	
+
 	for (int i = s;i <= e;i++) flags[i] = 'C';
       }
-      
+
       n_add = 0;
-      for (int i = 0;i <= n_bins;i++) 
+      for (int i = 0;i <= n_bins;i++)
 	if (flags[i] == 'C') {
 	  flags[i] = flags[i - 1];
 	  n_add++;
 	}
     }
-    
+
     // Additional deletions
     for (int b = 0;b < n_bins;b++) {
       if (flags[b] != ' ') continue;
@@ -1112,7 +1112,7 @@ void HisMaker::callSVs(string *user_chroms,int n_chroms,
 	b--;
       }
     }
-    
+
     // Additional duplications
     //     for (int b = 0;b < n_bins;b++) {
     //       if (flags[b] != ' ') continue;
@@ -1125,7 +1125,7 @@ void HisMaker::callSVs(string *user_chroms,int n_chroms,
     // 	b--;
     //       }
     //     }
-    
+
     // Filling and saving histograms
     for (int b = 0;b < n_bins;b++) {
       int b0 = b, n = 0;
@@ -1135,7 +1135,7 @@ void HisMaker::callSVs(string *user_chroms,int n_chroms,
       rd_level_merge->Fill(lev);
       b--;
     }
-    
+
     for (int b = 0;b < n_bins;b++) {
       int b0 = b, n = 0;
       char c = flags[b];
@@ -1148,7 +1148,7 @@ void HisMaker::callSVs(string *user_chroms,int n_chroms,
       }
       b--;
     }
-    
+
     writeHistogramsToBinDir(rd_level_merge,merge);
 
     // Making calls
@@ -1159,9 +1159,9 @@ void HisMaker::callSVs(string *user_chroms,int n_chroms,
       double cnv = 0;
       while (b < n_bins && flags[b] == c) cnv += rd[b++];
       int be = --b;
-      
+
       if (be <= bs) continue;
-      
+
       cnv /= (be - bs + 1)*mean;
       TString type = "???";
       if (c == 'D' || c == 'd')      type = "deletion";
@@ -1228,7 +1228,7 @@ double HisMaker::getMean(TH1 *his)
 int HisMaker::getChromNamesWithHis(string *names,bool useATcorr,bool useGCcorr)
 {
   TFile file(root_file_name,"Read");
-  if (file.IsZombie()) { 
+  if (file.IsZombie()) {
     cerr<<"Can't open file '"<<root_file_name<<"'."<<endl;
     return -1;
   }
@@ -1304,16 +1304,16 @@ void HisMaker::partition2D(string *user_chroms,int n_chroms,
       cerr<<"Can't find all histograms for '"<<chrom<<"'."<<endl;
       return;
     }
-    
+
     cout<<"Partitioning RD signal for '"<<chrom
 	<<"' with bin size of "<<bin_size<<" ..."<<endl;
 
     double mean,sigma;
     getMeanSigma(rd_distr,mean,sigma);
     cout<<"Average RD per bin is "<<mean<<" +- "<<sigma<<endl;
-    
+
     int n_bins = his_rd->GetNbinsX();
-    
+
     TString hname = his_rd->GetName();
     TH1 *hl1 = (TH1*)his_rd->Clone(hname + "_l1");
     TH1 *hl2 = (TH1*)his_rd->Clone(hname + "_l2");
@@ -1339,12 +1339,12 @@ void HisMaker::partition2D(string *user_chroms,int n_chroms,
       if (err_rd  > 0) isig_rd[b]  = 1/(err_rd*err_rd);
       if (err_aib > 0) isig_aib[b] = 1/(err_aib*err_aib);
     }
-    
+
     for (int bin_band = 2;bin_band <= range;bin_band++) {
-      
+
       cout<<"Bin band is "<<bin_band<<endl;
 
-      for (int b = 0;b < n_bins;b++) 
+      for (int b = 0;b < n_bins;b++)
 	if (!mask[b]) {
 	  level_rd[b]  = rd[b];
 	  level_aib[b] = aib[b];
@@ -1357,7 +1357,7 @@ void HisMaker::partition2D(string *user_chroms,int n_chroms,
       calcLevels(level_rd,isig_rd,mask,n_bins,bin_band,skipMasked,
 		 level_aib,isig_aib);
       for (int b = 0;b < n_bins;b++) hl1->SetBinContent(b + 1,level_rd[b]);
-      
+
       if (!exome)
 	for (int b = 0;b < n_bins;b++)
 	  if (!mask[b])
@@ -1365,7 +1365,7 @@ void HisMaker::partition2D(string *user_chroms,int n_chroms,
       calcLevels(level_rd,isig_rd,mask,n_bins,bin_band,skipMasked,
 		 level_aib,isig_aib);
       for (int b = 0;b < n_bins;b++) hl2->SetBinContent(b + 1,level_rd[b]);
-      
+
       if (!exome)
 	for (int b = 0;b < n_bins;b++)
 	  if (!mask[b])
@@ -1373,13 +1373,13 @@ void HisMaker::partition2D(string *user_chroms,int n_chroms,
       calcLevels(level_rd,isig_rd,mask,n_bins,bin_band,skipMasked,
 		 level_aib,isig_aib);
       for (int b = 0;b < n_bins;b++) hl3->SetBinContent(b + 1,level_rd[b]);
-      
+
       if (skipMasked) {
 	updateMask_skip(rd,level_rd,mask,n_bins,mean,sigma);
       } else {
 	updateMask(rd,level_rd,mask,n_bins,mean,sigma);
       }
-      
+
       if (bin_band >=   8) bin_band +=  1;
       if (bin_band >=  16) bin_band +=  2;
       if (bin_band >=  32) bin_band +=  4;
@@ -1388,7 +1388,7 @@ void HisMaker::partition2D(string *user_chroms,int n_chroms,
       if (bin_band >= 256) bin_band += 32;
       if (bin_band >= 512) bin_band += 64;
     }
-    
+
     for (int b = 0;b < n_bins;b++) partition->SetBinContent(b + 1,level_rd[b]);
     double prev = level_rd[0],prev_delta = 0;
     int count = 1;
@@ -1405,7 +1405,7 @@ void HisMaker::partition2D(string *user_chroms,int n_chroms,
 	count = 1;
       }
     }
-    
+
     delete[] rd;
     delete[] aib;
     delete[] level_rd;
@@ -1460,16 +1460,16 @@ void HisMaker::partition(string *user_chroms,int n_chroms,
       cerr<<"Can't find all histograms for '"<<chrom<<"'."<<endl;
       return;
     }
-    
+
     cout<<"Partitioning RD signal for '"<<chrom
 	<<"' with bin size of "<<bin_size<<" ..."<<endl;
 
     double mean,sigma;
     getMeanSigma(rd_distr,mean,sigma);
     cout<<"Average RD per bin is "<<mean<<" +- "<<sigma<<endl;
-    
+
     int n_bins = his->GetNbinsX();
-    
+
     TString hname = his->GetName();
     TH1 *hl1 = (TH1*)his->Clone(hname + "_l1");
     TH1 *hl2 = (TH1*)his->Clone(hname + "_l2");
@@ -1489,12 +1489,12 @@ void HisMaker::partition(string *user_chroms,int n_chroms,
       if (error > 0) isig[b] = 1/(error*error);
       else           isig[b] = 0;
     }
-    
+
     for (int bin_band = 2;bin_band <= range;bin_band++) {
-      
+
       cout<<"Bin band is "<<bin_band<<endl;
-      
-      for (int b = 0;b < n_bins;b++) 
+
+      for (int b = 0;b < n_bins;b++)
 	if (!mask[b]) level[b] = rd[b];
 
       if (!exome)
@@ -1502,25 +1502,25 @@ void HisMaker::partition(string *user_chroms,int n_chroms,
 	  if (!mask[b]) isig[b] = (level[b] < mean_4)? sigma_2: ms2/level[b];
       calcLevels(level,isig,mask,n_bins,bin_band,skipMasked);
       for (int b = 0;b < n_bins;b++) hl1->SetBinContent(b + 1,level[b]);
-      
+
       if (!exome)
 	for (int b = 0;b < n_bins;b++)
 	  if (!mask[b]) isig[b] = (level[b] < mean_4)? sigma_2: ms2/level[b];
       calcLevels(level,isig,mask,n_bins,bin_band,skipMasked);
       for (int b = 0;b < n_bins;b++) hl2->SetBinContent(b + 1,level[b]);
-      
+
       if (!exome)
 	for (int b = 0;b < n_bins;b++)
 	  if (!mask[b]) isig[b] = (level[b] < mean_4)? sigma_2: ms2/level[b];
       calcLevels(level,isig,mask,n_bins,bin_band,skipMasked);
       for (int b = 0;b < n_bins;b++) hl3->SetBinContent(b + 1,level[b]);
-      
+
       if (skipMasked) {
 	updateMask_skip(rd,level,mask,n_bins,mean,sigma);
       } else {
 	updateMask(rd,level,mask,n_bins,mean,sigma);
       }
-      
+
       if (bin_band >=   8) bin_band +=  1;
       if (bin_band >=  16) bin_band +=  2;
       if (bin_band >=  32) bin_band +=  4;
@@ -1529,7 +1529,7 @@ void HisMaker::partition(string *user_chroms,int n_chroms,
       if (bin_band >= 256) bin_band += 32;
       if (bin_band >= 512) bin_band += 64;
     }
-    
+
     for (int b = 0;b < n_bins;b++) partition->SetBinContent(b + 1,level[b]);
     double prev = level[0],prev_delta = 0;
     int count = 1;
@@ -1546,7 +1546,7 @@ void HisMaker::partition(string *user_chroms,int n_chroms,
 	count = 1;
       }
     }
-    
+
     delete[] rd;
     delete[] level;
     delete[] isig;
@@ -1630,7 +1630,7 @@ bool HisMaker::correctGCbyFragment(TH1 *his,TH1 *his_gc,
   }
   TH1 *his_frg  = his_read_frg->ProjectionY("his_frg");
   normalize(his_frg);
-  
+
   static const int N_precalc = 40;
   double frg_fraction[N_precalc + 1];
   int nbins = his_frg->GetNbinsX();
@@ -1751,7 +1751,7 @@ void HisMaker::updateMask(double *rd,double *level,bool *mask,int n_bins,
 			 GENOME_SIZE) > CUTOFF_TWO_REGIONS)
 	continue;
     }
-			       
+
     // Check that region is abnormal (deviates largerly from the mean)
     if (testRegion(mean,average,variance,n) > CUTOFF_REGION) continue;
 
@@ -1811,7 +1811,7 @@ void calcLevelsInner(const double* lev_rd,const double *inv_rd,
 		     const double *lev_aib = NULL,const double *inv_aib = NULL)
 {
   bool use_aib = lev_aib && inv_aib;
-  
+
   std::vector<int>    nonMaskedIndices;
   std::vector<double> nonMaskedLevs_rd, nonMaskedLevs_aib;
   std::vector<double> nonMaskedInvs_rd, nonMaskedInvs_aib;
@@ -1871,9 +1871,9 @@ void calcLevelsInner(const double* lev_rd,const double *inv_rd,
 	}
       }
 #ifdef USE_YEPPP
-      yepMath_Exp_V64f_V64f(window + left - bb + win, window_next + left - bb + win, right - left + 1);
+      yepMath_Exp_V64f_V64f(window_rd + left - bb + win, window_aib + left - bb + win, right - left + 1);
       double dot_product = 0;
-      yepCore_DotProduct_V64fV64f_S64f(exps + left - bb + win, window_next + left - bb + win, &dot_product, right - left + 1);
+      yepCore_DotProduct_V64fV64f_S64f(exps + left - bb + win, window_aib + left - bb + win, &dot_product, right - left + 1);
       grad_b_b += dot_product;
 #else
       for (int ii = left; ii <= right; ii++) {
@@ -1937,7 +1937,7 @@ void HisMaker::calcLevels(double *level1,double *isig1,
       continue;
     }
     nl *= getInverse(n);
-    for (int i = b_start;i <= b_stop;i++) 
+    for (int i = b_start;i <= b_stop;i++)
       if (!mask[i]) level1[i] = nl;
   }
 
@@ -2014,7 +2014,7 @@ TTree *HisMaker::fitValley2ATbias(TH1 *his_read,TH1 *his_frg)
 {
   TH2 *his_at = (TH2*)getHistogram(getATaggrName());
   int nbinsx  = his_read->GetNbinsX(), nbinsy = his_frg->GetNbinsY();
-  
+
   h_ins_smear[0]  = his_frg;
   h_read_smear[0] = his_read;
   for (int s = 1;s <= N_smear;s++) {
@@ -2066,7 +2066,7 @@ TTree *HisMaker::fitValley2ATbias(TH1 *his_read,TH1 *his_frg)
     len   = int(hx->GetBinCenter(l) + 0.5);
     TString his_name = "his_"; his_name += len;
     TH1 *his = his_at->ProjectionY(his_name,l,l);
-    int zero_bin = -1,nbins = his->GetNbinsX(); 
+    int zero_bin = -1,nbins = his->GetNbinsX();
     for (int b = 1;b <= nbins;b++) {
       double low = his->GetBinLowEdge(b);
       double up  = low + his->GetBinWidth(b);
@@ -2125,7 +2125,7 @@ TTree *HisMaker::fitValley2ATbias(TH1 *his_read,TH1 *his_frg)
     norm_read = func->GetParameter(5);
     smear     = func->GetParameter(6);
     zero      = func->Eval(0);
-    tree_pars->Fill();         
+    tree_pars->Fill();
 
 //     TString input;
 //     timer->TurnOn();
@@ -2147,7 +2147,7 @@ TTree *HisMaker::fitValley2ATbias(TH1 *his_read,TH1 *his_frg)
   return tree_pars;
 }
 
-void makeReadAndFrgHis(TH2 *his_read_frg,TH1 *his_read,TH1 *his_frg) 
+void makeReadAndFrgHis(TH2 *his_read_frg,TH1 *his_read,TH1 *his_frg)
 {
   if (!his_read_frg) return;
     int nbinsx = his_read_frg->GetNbinsX(),nbinsy = his_read_frg->GetNbinsY();
@@ -2178,7 +2178,7 @@ void HisMaker::stat(string *user_chroms,int n_chroms,bool useATcorr)
   }
 
   if (n_chroms == 0 || (n_chroms == 1 && user_chroms[0] == "")) {
-    
+
     n_chroms = getChromNamesWithHis(chr_names,false,false);
     if (n_chroms < 0) return;
     if (n_chroms == 0) {
@@ -2228,7 +2228,7 @@ void HisMaker::stat(string *user_chroms,int n_chroms,bool useATcorr)
 	  n_av++;
 	}
       }
-      
+
       if (n_av > 0) {
 	RANGE /= n_av, NORM_FRG /= n_av, NORM_READ /= n_av, SHIFT /= n_av;
 	TGraph *graph = new TGraph(n_gr,x,y);
@@ -2239,7 +2239,7 @@ void HisMaker::stat(string *user_chroms,int n_chroms,bool useATcorr)
 	cout<<P0<<" "<<P1<<endl;
       }
     }
-    
+
     if (his_read_frg && his_read && his_frg && RANGE > 0) {
       double RANGE_over = 1./RANGE;
       for (int c = 0;c < n_chroms;c++) { // Correcting for AT run bias
@@ -2253,7 +2253,7 @@ void HisMaker::stat(string *user_chroms,int n_chroms,bool useATcorr)
 	  continue;
 	}
 	TFile file(root_file_name,"Read");
-	if (file.IsZombie()) { 
+	if (file.IsZombie()) {
 	  cerr<<"Can't open file '"<<root_file_name<<"'."<<endl;
 	  return;
 	}
@@ -2293,7 +2293,7 @@ void HisMaker::stat(string *user_chroms,int n_chroms,bool useATcorr)
 	      double lost = len*P1 + P0; if (lost < 0) lost = 0;
 	      double p = (1 - lost) + lost*RANGE_over*offset;
 	      if (p < 0) p = 0;
-	      
+
 	      int bin = his_read->GetBin(offset);
 	      double tmp = 0;
 	      if (bin >= 1 && bin <= his_read->GetNbinsX())
@@ -2302,13 +2302,13 @@ void HisMaker::stat(string *user_chroms,int n_chroms,bool useATcorr)
 	      bin = his_frg->GetBin(offset);
 	      if (bin >= 1 && bin <= his_frg->GetNbinsX())
 		tmp += NORM_FRG*lost/len*his_frg->GetBinContent(offset);
-	      
+
 	      if      (is5) add5  = (add5 + tmp)*p;
 	      else if (is3) add3 += tmp*p3;
 	      if      (is5) p5 *= p;
 	      else if (is3) p3 *= p;
 	    }
-	    
+
 	    val += 0.5*p5 + 0.5*p3;
 	    add += add3 + add5;
 	    np++;
@@ -2371,7 +2371,7 @@ void HisMaker::stat(string *user_chroms,int n_chroms,bool useATcorr)
     if (his_gc && his_p) { // Correlation of RD and GC
       int n = his_gc->GetNbinsX();
       if (Genome::isSexChrom(name))
-	for (int i = 1;i <= n;i++) 
+	for (int i = 1;i <= n;i++)
 	  rd_gc_xy->Fill(his_gc->GetBinContent(i),
 			 his_p->GetBinContent(i));
       else for (int i = 1;i <= n;i++)
@@ -2464,7 +2464,7 @@ void HisMaker::stat(string *user_chroms,int n_chroms,bool useATcorr)
     if (Genome::isSexChrom(name))
       for (int i = 1;i <= n;i++)
 	rd_gc_xy_GC->Fill(his_gc->GetBinContent(i),his_p->GetBinContent(i));
-    else 
+    else
       for (int i = 1;i <= n;i++)
 	rd_gc_GC->Fill(his_gc->GetBinContent(i),his_p->GetBinContent(i));
   }
@@ -2573,7 +2573,7 @@ void HisMaker::produceHistogramsNew(string *user_chroms,int user_n_chroms)
   }
 
   TFile file(root_file_name,"Read");
-  if (file.IsZombie()) { 
+  if (file.IsZombie()) {
     cerr<<"Can't open file '"<<root_file_name<<"'."<<endl;
     return;
   }
@@ -2745,7 +2745,7 @@ void HisMaker::produceHistogramsNew(string *user_chroms,int user_n_chroms)
     delete[] rarr;
     delete[] arr;
   }
-  
+
   cout<<"Deleting2 ..."<<endl;
   for (int c = 0;c < ncs;c++) {
     delete[] for_pos[c];
@@ -2806,11 +2806,11 @@ void HisMaker::produceHistograms(string *user_chroms,int n_chroms,
     TH1 *his_gc = (TH1*)his_rd_p->Clone(getGCName(name,bin_size));
     his_rd_u->SetDirectory(0);
     his_rd_p->SetDirectory(0);
-    
+
     for (int f = 0;f < n_root_files;f++) {
       string rfn = root_files[f];
       TFile file(rfn.c_str(),"Read");
-      if (file.IsZombie()) { 
+      if (file.IsZombie()) {
 	cerr<<"Can't open file '"<<rfn<<"'."<<endl;
 	continue;
       }
@@ -2834,7 +2834,7 @@ void HisMaker::produceHistograms(string *user_chroms,int n_chroms,
 	    <<rfn<<"'."<<endl;
 	continue;
       }
-      
+
       int position;
       short rd_unique,rd_parity;
       tree->SetBranchAddress("position", &position);
@@ -2845,7 +2845,7 @@ void HisMaker::produceHistograms(string *user_chroms,int n_chroms,
       int count_unique = 0,count_parity = 0;
       tree->GetEntry(index++);
       while (index < n_ent) {
-	
+
 	// Calculate count
 	while (position <= end && index < n_ent) {
 	  count_unique += rd_unique;
@@ -2854,7 +2854,7 @@ void HisMaker::produceHistograms(string *user_chroms,int n_chroms,
 	  if (count_unique < 0) count_unique = 30000;
 	  if (count_parity < 0) count_parity = 30000;
 	}
-	
+
 	bin++;
 	if (bin < 1 || bin > n_bins) {
 	  cerr<<"Bin out of bounds."<<endl;
@@ -2866,7 +2866,7 @@ void HisMaker::produceHistograms(string *user_chroms,int n_chroms,
 	  his_rd_u->SetBinError(bin,0);
 	  his_rd_p->SetBinError(bin,0);
 	}
-	
+
 	start += bin_size;
 	end   += bin_size;
 	count_unique   = 0;
@@ -2878,7 +2878,7 @@ void HisMaker::produceHistograms(string *user_chroms,int n_chroms,
 
     // Writing chromosome specific histograms
     writeHistogramsToBinDir(his_rd_u,his_rd_p);
-    
+
     // Creating histograms with GC-content
     cout<<"Making GC histogram for '"<<chrom<<"' ..."<<endl;
     int n_read = readChromosome(name,seq_buffer,org_len);
@@ -2990,7 +2990,7 @@ void HisMaker::produceHistograms_try_correct(string *user_chroms,int n_chroms)
     cout<<"Reading tree ..."<<endl;
     if (!readTreeForChromosome(root_file_name,chrom,counts_p,counts_u))
       continue;
-    
+
     // Creating histograms with GC-content
     cout<<"Making GC histogram ..."<<endl;
     int *at_run,atn = 0;
@@ -3056,7 +3056,7 @@ void HisMaker::produceHistograms_try_correct(string *user_chroms,int n_chroms)
     }
 
 //     TFile file(root_file_name,"Read");
-//     if (file.IsZombie()) { 
+//     if (file.IsZombie()) {
 //       cerr<<"Can't open file '"<<root_file_name<<"'."<<endl;
 //       return;
 //     }
@@ -3082,7 +3082,7 @@ void HisMaker::produceHistograms_try_correct(string *user_chroms,int n_chroms)
 // 	for (int i = 0;i < rd_parity;i++) his_at->Fill(len,offset);
 //       }
 //     }
-    
+
 //     // Deleting tree
 //     delete tree;
 //     file.Close();
@@ -3192,7 +3192,7 @@ void HisMaker::produceHistograms_try_correct(string *user_chroms,int n_chroms)
 	}
 	val += 2*counts_p[i]/(corr1 + corr2);
       }
-      
+
       his_rd_p->SetBinContent(b,val);
       bstart += bin_size;
       bend   += bin_size;
@@ -3293,7 +3293,7 @@ void HisMaker::aggregate(string *files,int n_files,string *chroms,int n_chroms)
       int ats = i,ate = i;
       while (i < len_seq && (c = seq_buffer[i]) &&
 	     (c == 'A' || c == 'a' || c == 'T' || c == 't')) ate = i++;
-      
+
       int at_len = ate - ats + 1;
       if (at_len >= 10) {
 	at_starts[atn] = ats + 1;
@@ -3407,12 +3407,12 @@ void HisMaker::aggregate(string *files,int n_files,string *chroms,int n_chroms)
   }
 
   writeHistograms(his_AT_aggr,his_AT_corr,his_GC_aggr,his_frg_len);
-  
+
   delete[] seq_buffer;
   delete[] at_starts;
-  delete[] at_ends; 
+  delete[] at_ends;
   delete[] gc_starts;
-  delete[] gc_ends; 
+  delete[] gc_ends;
 }
 
 void HisMaker::mergeTrees(string *user_chroms,int n_chroms,
@@ -3463,7 +3463,7 @@ int HisMaker::getChromNamesWithTree(string *names,string rfn)
   if (!names) return 0;
   if (rfn.length() == 0) rfn = root_file_name;
   TFile file(rfn.c_str(),"Read");
-  if (file.IsZombie()) { 
+  if (file.IsZombie()) {
     cerr<<"Can't open file '"<<root_file_name<<"'."<<endl;
     return 0;
   }
@@ -3494,7 +3494,7 @@ int HisMaker::getChromLenWithTree(string chrom,string rfn)
   string name  = chrom;
   if (rfn.length() == 0) rfn = root_file_name;
   TFile file(rfn.c_str(),"Read");
-  if (!file.IsZombie()) { 
+  if (!file.IsZombie()) {
     TTree *tree = (TTree*) file.Get(name.c_str());
     if (tree) len = parseChromosomeLength(tree->GetTitle());
   }
@@ -3510,7 +3510,7 @@ int HisMaker::getChromLenWithTree(string chrom,string rfn)
 	       <<refGenome_->name()<<"."<<endl;
     }
   }
-  
+
   return len;
 }
 
@@ -3589,7 +3589,7 @@ void HisMaker::produceTrees(string *user_chroms,int n_chroms,
 			       51,9.5,60.5,
 			       2*win + 1,-win - 0.5,win + 0.5,
 			       2*win + 1,-win - 0.5,win + 0.5);
-  
+
 
   long n_placed = 0;
   int ati = 0;
@@ -3597,7 +3597,7 @@ void HisMaker::produceTrees(string *user_chroms,int n_chroms,
 
     if (user_files[f].length() > 0)
       cout<<"Parsing file "<<user_files[f]<<" ..."<<endl;
-    else 
+    else
       cout<<"Parsing stdin ..."<<endl;
 
     AliParser *parser = new AliParser(user_files[f].c_str());
@@ -3648,7 +3648,7 @@ void HisMaker::produceTrees(string *user_chroms,int n_chroms,
 	      <<"("<<clens[index]<<", "<<parser->chromLen(c)<<")."<<endl
 	      <<"Using the previous length "<<clens[index]<<endl;
 	reindex[c] = index;
-      } 
+      }
     }
 
     cout<<"Allocating memory ..."<<endl;
@@ -3699,7 +3699,7 @@ void HisMaker::produceTrees(string *user_chroms,int n_chroms,
       if (forUnique && !parser->isQ0())
 	if (counts_u[chr_ind][mid] + 1 > 0) counts_u[chr_ind][mid]++;
       n_placed++;
-      
+
       int frg_len = parser->getFragmentLength();
       if (frg_len < 0) his_frg_read->Fill(parser->getReadLength(),-frg_len);
       else             his_frg_read->Fill(parser->getReadLength(), frg_len);
@@ -3753,7 +3753,7 @@ void HisMaker::produceTrees(string *user_chroms,int n_chroms,
     delete parser;
   }
 
-  for (int c = 0;c < ncs;c++) 
+  for (int c = 0;c < ncs;c++)
     if (counts_p[c]) {
       cout<<"Filling and saving tree for '"<<cnames[c]<<"' ..."<<endl;
       short *arru = NULL, *arrp = NULL;
@@ -3803,15 +3803,15 @@ void HisMaker::writeTreeForChromosome(string chrom,short *arr_p,
       tree->Fill();
     }
   }
-    
+
   // Writing the tree
   tree->Write(chrom.c_str(),TObject::kOverwrite);
-    
+
   // Deleting the tree
   delete tree;
   file.Close();
 }
-  
+
 bool HisMaker::readTreeForChromosome(TString fileName,string chrom,
 				     short *arr_p,short *arr_u)
 {
@@ -3828,7 +3828,7 @@ bool HisMaker::readTreeForChromosome(TString fileName,string chrom,
 	<<fileName<<"'."<<endl;
     return false;
   }
-    
+
   int position;
   short rd_unique,rd_parity;
   tree->SetBranchAddress("position", &position);
@@ -3866,10 +3866,10 @@ void HisMaker::writeATTreeForChromosome(string chrom,int *arr,int n)
     end   = arr[i + 1];
     tree->Fill();
   }
-    
+
   // Writing the tree
   tree->Write(tree->GetName(),TObject::kOverwrite);
-    
+
   // Deleting the tree
   delete tree;
   file.Close();
